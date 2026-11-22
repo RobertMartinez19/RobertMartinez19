@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Secret Santa 2026</title>
+<meta name="description" content="Rules and private draws for our 2026 Secret Santa.">
+<meta name="theme-color" content="#0f1a15">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎁</text></svg>">
+<style>
+  :root {
+    --bg: #0f1a15;
+    --bg-2: #13221b;
+    --surface: rgba(255, 255, 255, 0.06);
+    --surface-strong: rgba(255, 255, 255, 0.1);
+    --line: rgba(255, 255, 255, 0.12);
+    --text: #f4f1ea;
+    --muted: rgba(244, 241, 234, 0.68);
+    --red: #e5484d;
+    --red-soft: rgba(229, 72, 77, 0.16);
+    --gold: #f2c46d;
+    --gold-soft: rgba(242, 196, 109, 0.16);
+    --green: #4cc38a;
+    --green-soft: rgba(76, 195, 138, 0.16);
+    --radius: 20px;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    color-scheme: dark;
+  }
+  html, body { background: var(--bg); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font: 100%/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(229, 72, 77, 0.18), transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, rgba(76, 195, 138, 0.14), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* Translucent top bar with the language switch */
+  .bar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px max(16px, env(safe-area-inset-left)) 12px max(16px, env(safe-area-inset-right));
+    background: rgba(15, 26, 21, 0.62);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { white-space: nowrap; font-size: clamp(0.875rem, 4vw, 1rem); font-weight: 650; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+  .seg {
+    position: relative; display: grid; grid-template-columns: 1fr 1fr;
+    padding: 3px; border-radius: 999px; background: var(--surface-strong); border: 1px solid var(--line);
+  }
+  .seg button {
+    position: relative; z-index: 1; appearance: none; border: 0; background: none; color: var(--muted);
+    font: inherit; font-size: 0.875rem; font-weight: 600; padding: 6px 14px; border-radius: 999px; cursor: pointer;
+    transition: color 200ms ease;
+  }
+  .seg button[aria-pressed="true"] { color: #10150f; }
+  .seg .thumb {
+    position: absolute; top: 3px; left: 3px; bottom: 3px; width: calc(50% - 3px);
+    border-radius: 999px; background: var(--text);
+    transition: transform 240ms var(--ease-in-out);
+  }
+  .seg[data-lang="es"] .thumb { transform: translateX(100%); }
+
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  main { max-width: 760px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  [data-i18n-root] { transition: opacity 150ms ease; }
+  [data-i18n-root].swapping { opacity: 0; }
+
+  .hero { padding: 24px 0 8px; }
+  .eyebrow { color: var(--gold); font-weight: 650; font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 10px; }
+  h1 {
+    font-size: clamp(2.25rem, 7vw, 3.5rem); line-height: 1.05; letter-spacing: -0.03em;
+    margin: 0 0 14px; font-weight: 750;
+  }
+  .lead { font-size: 1.125rem; color: var(--muted); margin: 0; max-width: 34em; }
+
+  h2 { font-size: 1.375rem; letter-spacing: -0.015em; line-height: 1.2; margin: 48px 0 16px; }
+
+  .pools { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 640px) { .pools { grid-template-columns: 1fr; } }
+  .pool {
+    border-radius: var(--radius); padding: 18px; background: var(--surface); border: 1px solid var(--line);
+  }
+  .pool .tag {
+    display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 999px; margin-bottom: 12px;
+  }
+  .pool.boys .tag { background: var(--green-soft); color: var(--green); }
+  .pool.girls .tag { background: var(--red-soft); color: #ff8a8d; }
+  .pool.all .tag { background: var(--gold-soft); color: var(--gold); }
+  .pool h3 { margin: 0 0 6px; font-size: 1.0625rem; letter-spacing: -0.01em; }
+  .pool p { margin: 0; color: var(--muted); font-size: 0.9375rem; }
+  .pool .price { color: var(--text); font-size: 1.75rem; font-weight: 750; letter-spacing: -0.02em; margin: 12px 0 0; }
+
+  .total {
+    margin-top: 12px; padding: 14px 18px; border-radius: 16px; background: var(--surface);
+    border: 1px solid var(--line); color: var(--muted); font-size: 0.9375rem;
+  }
+  .total strong { color: var(--text); }
+
+  ol.rules { list-style: none; counter-reset: r; padding: 0; margin: 0; display: grid; gap: 10px; }
+  ol.rules li {
+    counter-increment: r; position: relative; padding: 14px 16px 14px 56px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+  }
+  ol.rules li::before {
+    content: counter(r); position: absolute; left: 14px; top: 13px;
+    width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--surface-strong); font-weight: 700; font-size: 0.875rem;
+  }
+  ol.rules b { display: block; margin-bottom: 2px; }
+  ol.rules span { color: var(--muted); font-size: 0.9375rem; }
+
+  /* Draw panel */
+  .draw {
+    border-radius: 24px; padding: 22px; background: var(--surface); border: 1px solid var(--line);
+  }
+  .draw p.hint { margin: 0 0 18px; color: var(--muted); }
+  .field { display: grid; gap: 6px; margin-bottom: 14px; }
+  label { font-weight: 600; font-size: 0.9375rem; }
+  select, input {
+    font: inherit; font-size: 1rem; color: var(--text); width: 100%;
+    background: rgba(0, 0, 0, 0.25); border: 1px solid var(--line); border-radius: 14px;
+    padding: 13px 14px; outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  select:focus, input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+  input { letter-spacing: 0.18em; text-transform: uppercase; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  input::placeholder { letter-spacing: 0.18em; color: rgba(244, 241, 234, 0.35); }
+  .btn {
+    appearance: none; border: 0; cursor: pointer; width: 100%;
+    font: inherit; font-weight: 700; font-size: 1.0625rem; color: #fff;
+    padding: 15px 18px; border-radius: 14px; background: var(--red);
+    transition: transform 120ms var(--ease-out), background-color 150ms ease, opacity 150ms ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn[disabled] { opacity: 0.6; cursor: progress; }
+  @media (hover: hover) and (pointer: fine) { .btn:hover { background: #f05257; } }
+  .error { color: #ff8a8d; font-size: 0.9375rem; margin: 12px 0 0; min-height: 1.4em; }
+
+  .results { display: grid; gap: 12px; margin-top: 18px; }
+  .results[hidden] { display: none; }
+  .match {
+    border-radius: var(--radius); padding: 18px; border: 1px solid var(--line);
+    background: var(--surface-strong);
+    opacity: 0; transform: translateY(10px) scale(0.97);
+  }
+  .match.in {
+    opacity: 1; transform: none;
+    transition: opacity 400ms var(--ease-out), transform 400ms var(--ease-out);
+  }
+  .match .tag { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  .match .who { font-size: 2rem; font-weight: 750; letter-spacing: -0.02em; margin: 4px 0 2px; }
+  .match .what { color: var(--muted); font-size: 0.9375rem; margin: 0; }
+  .match.gag .who { color: #ff8a8d; }
+  .match.all .who { color: var(--gold); }
+  .secret { text-align: center; color: var(--muted); font-size: 0.875rem; margin: 6px 0 0; }
+  .again { background: none; border: 1px solid var(--line); color: var(--text); margin-top: 6px; }
+  @media (hover: hover) and (pointer: fine) { .again:hover { background: var(--surface); } }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.8125rem; padding: 0 16px 40px; }
+
+  /* First-load entrance: once, staggered */
+  .rise { animation: rise 500ms var(--ease-out) both; }
+  .rise:nth-child(2) { animation-delay: 60ms; }
+  .rise:nth-child(3) { animation-delay: 120ms; }
+  .rise:nth-child(4) { animation-delay: 180ms; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise { animation: fade 200ms ease both; }
+    @keyframes fade { from { opacity: 0; } }
+    .match { transform: none; }
+    .match.in { transition: opacity 200ms ease; }
+    .seg .thumb { transition: none; }
+    .btn:active { transform: none; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .bar { background: var(--bg); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="brand"><span aria-hidden="true">🎁</span> <span data-t="brand">Secret Santa 2026</span></div>
+  <div class="seg" id="lang" data-lang="en" role="group" aria-label="Language / Idioma">
+    <span class="thumb" aria-hidden="true"></span>
+    <button type="button" data-lang-btn="en" aria-pressed="true">English</button>
+    <button type="button" data-lang-btn="es" aria-pressed="false">Español</button>
+  </div>
+</header>
+
+<main data-i18n-root>
+  <section class="hero">
+    <p class="eyebrow rise" data-t="eyebrow">The 2026 gift exchange</p>
+    <h1 class="rise" data-t="title">Three pools. $30 a gift. Total secrecy.</h1>
+    <p class="lead rise" data-t="lead">Everyone gives two gifts: a gag gift in the boys or girls pool, and a thoughtful gift in the everyone pool. Get your names below with the private code you were sent.</p>
+  </section>
+
+  <h2 data-t="poolsTitle">The three pools</h2>
+  <div class="pools">
+    <div class="pool boys">
+      <span class="tag" data-t="boysTag">Boys only</span>
+      <h3 data-t="boysName">Boys gag gift</h3>
+      <p data-t="boysDesc">The boys draw each other. Funny, ridiculous, embarrassing. Make them laugh.</p>
+      <p class="price">$30</p>
+    </div>
+    <div class="pool girls">
+      <span class="tag" data-t="girlsTag">Girls only</span>
+      <h3 data-t="girlsName">Girls gag gift</h3>
+      <p data-t="girlsDesc">The girls draw each other. Same idea: the funnier, the better.</p>
+      <p class="price">$30</p>
+    </div>
+    <div class="pool all">
+      <span class="tag" data-t="allTag">Everyone</span>
+      <h3 data-t="allName">Thoughtful gift</h3>
+      <p data-t="allDesc">All 11 of us in one draw. Get something they'll actually love or use.</p>
+      <p class="price">$30</p>
+    </div>
+  </div>
+  <div class="total" data-t-html="total">You're in <strong>two</strong> pools: your gag pool and the everyone pool. That's <strong>2 gifts, $60 total</strong>.</div>
+
+  <h2 data-t="rulesTitle">The rules</h2>
+  <ol class="rules">
+    <li><b data-t="r1t">Spend exactly $30 per gift</b><span data-t="r1">Not $25, not $40. Get as close to $30 as you can so everything is fair.</span></li>
+    <li><b data-t="r2t">Gag gifts are funny, not mean</b><span data-t="r2">Embarrassing and ridiculous is the goal. Nothing that would actually hurt someone's feelings.</span></li>
+    <li><b data-t="r3t">Thoughtful gifts should mean something</b><span data-t="r3">Check their wish list in the app, think about what they're into, and pick something they'll keep.</span></li>
+    <li><b data-t="r4t">Keep it secret</b><span data-t="r4">Don't tell anyone who you got, and don't post your screen in the group chat. The reveal happens at the exchange.</span></li>
+    <li><b data-t="r5t">Label every gift</b><span data-t="r5">Write who it's for and which pool it's from (Gag or Everyone). Don't write your own name.</span></li>
+    <li><b data-t="r6t">Lost your code?</b><span data-t="r6">Ask Berto to send it to you again. Your code only opens your own names.</span></li>
+  </ol>
+
+  <h2 id="draw" data-t="drawTitle">Get your names</h2>
+  <form class="draw" id="form" autocomplete="off">
+    <p class="hint" data-t="drawHint">Pick your name and enter the private code Berto texted you.</p>
+    <div class="field">
+      <label for="who" data-t="nameLabel">Your name</label>
+      <select id="who" required>
+        <option value="" data-t="namePick">Choose your name</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="code" data-t="codeLabel">Your private code</label>
+      <input id="code" inputmode="text" maxlength="7" placeholder="ABC-123" required spellcheck="false" autocapitalize="characters">
+    </div>
+    <button class="btn" id="go" type="submit" data-t="reveal">Reveal my names</button>
+    <p class="error" id="err" role="alert"></p>
+
+    <div class="results" id="results" hidden aria-live="polite">
+      <div class="match gag" id="m-gag">
+        <span class="tag" id="m-gag-tag"></span>
+        <div class="who" id="m-gag-who"></div>
+        <p class="what" data-t="gagWhat">Your $30 gag gift goes to them.</p>
+      </div>
+      <div class="match all" id="m-all">
+        <span class="tag" data-t="allResultTag">Everyone pool</span>
+        <div class="who" id="m-all-who"></div>
+        <p class="what" data-t="allWhat">Your $30 thoughtful gift goes to them.</p>
+      </div>
+      <p class="secret" data-t="secret">Shh. Close this page before anyone looks over your shoulder.</p>
+      <button class="btn again" type="button" id="hide" data-t="hide">Hide my names</button>
+    </div>
+  </form>
+</main>
+<footer data-t="footer">Made for the crew. Happy holidays 🎄</footer>
+
+<script>
+const DRAWS = {"iterations": 200000, "people": {"Berto": {"salt": "9Jn6vQtlbUtBIUjTi6P3sQ==", "iv": "hnUSrnsgfbo+lx1s", "ct": "sc2xjXQUQdwxGsUU2FNUItv8f2EKoeVOI6ZgTkx5S6j6KkLe3tGnEZl+lCEK4bJupI0z2uHeLRL+FUWYetvKiFkXDpr1wKEK"}, "Reagan": {"salt": "Z1md5C0UbeprUjYzQJxq4Q==", "iv": "cLXKap/wm17cKVtb", "ct": "W3T78UGeEJlI/G7TyFfTB0tJbSvKRyp5wSKQbvg10xiILpBUrpvkXEff/mlm0ktEluKhloKAxDCiob5eTHNiFba0YN6bHAlNNQ=="}, "Jay": {"salt": "hyZb2vHjcTAR3tUB/Hd9qg==", "iv": "qaujyVu0bgOkfOpT", "ct": "meNmm+0mX1Cj2Qgo6zPAPzCaBEP6WQa32BleoeW+xv2C/EGfrK4rpKVia7mgqEgVc4KKxNqj0fJOodUJEHK3Pq1ZFupgAxff"}, "Aj": {"salt": "Wj9LXD9NYtXHik9uHHNt5A==", "iv": "eTbjfJlpsqxS5XTx", "ct": "kNLCULNHtrarIJcvzRNZ+oFwfF8pDG8KGTM+MhKhZbeJNeaAyqiyOyqtClei8c/4EFvD9xz3x+JKgliGY4bHu1H8Gk+QVoQ="}, "Adrian": {"salt": "Eijj+c12dYdLsKuxEX0E3A==", "iv": "Jy1F2fr+Z9ZULtG9", "ct": "Fz+gJ5GkOOItfToU/ssYV1V0Dz9fuo+OvyCrSKXW4zDUu8anuap+i7PWbUBqOr0EkCQZr6/HuIXx3+xq2LgLVcsNXw=="}, "Sophia": {"salt": "89QVX1zLlS3gXqP9atZBaQ==", "iv": "KlKg6aQ50+BD5LdX", "ct": "A/EONbW8XE0AAIJVjQ+V5akw0qycb37JDD7OSwbr5BO5XYzEEv0IEjxRNJh01drrPCZa0qx8GHfLjBbYHh0cVYUlnfjN1vj6"}, "Uly": {"salt": "3XO3N45YIh5cdOn4FyDiTg==", "iv": "tF5ZcZK+JNqTt747", "ct": "jYksfkEhf2uZ44sGrq/ajuxLuDsGLUX8DUnZQD0lqB4lbPvDVOpTg4ScJ2wCXCCI3xllIHV9QnHcgtUCvCbgS0Bk8UO5"}, "Sal": {"salt": "jOgmajsP/W9BD/UdSfWTJQ==", "iv": "hwEcLDUWcmWx/74J", "ct": "x8L6nGR78687+eq0IU+p579sq6w1xPMjTcYy76FFsD0DqQrYa9JPcU470JpMR3AXawrpnCaMDyM7PI0wmROvdhlp21/DaFZtWgU="}, "Danny": {"salt": "RElmGek1q5VtGhmE3gVAlA==", "iv": "oEhQpBYAnpTI+7M3", "ct": "sue90NiEPocE0gi+fItgPEhJs7ehuN26sADg027zOxK7rdZnQkm8KXl+ufa1jQ+f9U2KzcnH//b1q1+MfmZoqWLMN5qforBh"}, "Sabrina": {"salt": "fELWLx2C/NBuk+13QGMFlQ==", "iv": "Xu5Zo58fYVvfq7cO", "ct": "1N1EM3+RJvlDlqXqhioYAm5oa6EQdspRFeqb/MCXOJq0+URlYCoz3aApRICWdBdLln/l9Yx/2infCQgAX8HF/2s2Y+ycTJyb"}, "Chi": {"salt": "fGZGv04ZIdHRmN9Bl9zxAg==", "iv": "COTuPWb+tJc/GLNE", "ct": "eYxPLyv5Lyzxsofr94U2Uu6MrRVPGi/23AbS3bxY4E7MkTlDkQJ8ntxTvY29otY+XDt/2g+/ZaovQ0tHQCSOWd2tBKyuKw=="}}};
+
+const T = {
+  en: {
+    brand: "Secret Santa 2026",
+    eyebrow: "The 2026 gift exchange",
+    title: "Three pools. $30 a gift. Total secrecy.",
+    lead: "Everyone gives two gifts: a gag gift in the boys or girls pool, and a thoughtful gift in the everyone pool. Get your names below with the private code you were sent.",
+    poolsTitle: "The three pools",
+    boysTag: "Boys only", boysName: "Boys gag gift",
+    boysDesc: "The boys draw each other. Funny, ridiculous, embarrassing. Make them laugh.",
+    girlsTag: "Girls only", girlsName: "Girls gag gift",
+    girlsDesc: "The girls draw each other. Same idea: the funnier, the better.",
+    allTag: "Everyone", allName: "Thoughtful gift",
+    allDesc: "All 11 of us in one draw. Get something they'll actually love or use.",
+    total: "You're in <strong>two</strong> pools: your gag pool and the everyone pool. That's <strong>2 gifts, $60 total</strong>.",
+    rulesTitle: "The rules",
+    r1t: "Spend exactly $30 per gift", r1: "Not $25, not $40. Get as close to $30 as you can so everything is fair.",
+    r2t: "Gag gifts are funny, not mean", r2: "Embarrassing and ridiculous is the goal. Nothing that would actually hurt someone's feelings.",
+    r3t: "Thoughtful gifts should mean something", r3: "Check their wish list in the app, think about what they're into, and pick something they'll keep.",
+    r4t: "Keep it secret", r4: "Don't tell anyone who you got, and don't post your screen in the group chat. The reveal happens at the exchange.",
+    r5t: "Label every gift", r5: "Write who it's for and which pool it's from (Gag or Everyone). Don't write your own name.",
+    r6t: "Lost your code?", r6: "Ask Berto to send it to you again. Your code only opens your own names.",
+    drawTitle: "Get your names",
+    drawHint: "Pick your name and enter the private code Berto texted you.",
+    nameLabel: "Your name", namePick: "Choose your name",
+    codeLabel: "Your private code",
+    reveal: "Reveal my names", opening: "Opening…",
+    gagTag: { boys: "Boys gag pool", girls: "Girls gag pool" },
+    gagWhat: "Your $30 gag gift goes to them.",
+    allResultTag: "Everyone pool",
+    allWhat: "Your $30 thoughtful gift goes to them.",
+    secret: "Shh. Close this page before anyone looks over your shoulder.",
+    hide: "Hide my names",
+    errName: "Choose your name first.",
+    errCode: "That code doesn't match your name. Check it and try again.",
+    errShort: "Codes have 6 characters, like ABC-123.",
+    footer: "Made for the crew. Happy holidays 🎄"
+  },
+  es: {
+    brand: "Amigo Secreto 2026",
+    eyebrow: "Intercambio de regalos 2026",
+    title: "Tres grupos. $30 por regalo. Todo en secreto.",
+    lead: "Cada quien da dos regalos: un regalo de broma en el grupo de hombres o de mujeres, y un regalo especial en el grupo de todos. Abajo puedes ver tus nombres con el código privado que te mandaron.",
+    poolsTitle: "Los tres grupos",
+    boysTag: "Solo hombres", boysName: "Regalo de broma (hombres)",
+    boysDesc: "Los hombres se sortean entre ellos. Algo chistoso, ridículo o vergonzoso. Que se rían.",
+    girlsTag: "Solo mujeres", girlsName: "Regalo de broma (mujeres)",
+    girlsDesc: "Las mujeres se sortean entre ellas. La misma idea: entre más chistoso, mejor.",
+    allTag: "Todos", allName: "Regalo especial",
+    allDesc: "Los 11 en un solo sorteo. Regala algo que de verdad le guste o vaya a usar.",
+    total: "Estás en <strong>dos</strong> grupos: tu grupo de broma y el grupo de todos. Son <strong>2 regalos, $60 en total</strong>.",
+    rulesTitle: "Las reglas",
+    r1t: "Gasta exactamente $30 por regalo", r1: "Ni $25, ni $40. Acércate lo más posible a $30 para que sea justo para todos.",
+    r2t: "Los regalos de broma son chistosos, no crueles", r2: "La idea es que sea vergonzoso y ridículo. Nada que de verdad pueda lastimar a alguien.",
+    r3t: "El regalo especial debe significar algo", r3: "Revisa su lista de deseos en la app, piensa en lo que le gusta y escoge algo que vaya a conservar.",
+    r4t: "Guarda el secreto", r4: "No le digas a nadie a quién te tocó y no mandes captura de pantalla al chat del grupo. Todo se revela en el intercambio.",
+    r5t: "Ponle etiqueta a cada regalo", r5: "Escribe para quién es y de qué grupo es (Broma o Todos). No pongas tu nombre.",
+    r6t: "¿Perdiste tu código?", r6: "Pídele a Berto que te lo mande otra vez. Tu código solo abre tus propios nombres.",
+    drawTitle: "Ve tus nombres",
+    drawHint: "Escoge tu nombre y escribe el código privado que te mandó Berto.",
+    nameLabel: "Tu nombre", namePick: "Escoge tu nombre",
+    codeLabel: "Tu código privado",
+    reveal: "Ver mis nombres", opening: "Abriendo…",
+    gagTag: { boys: "Grupo de broma (hombres)", girls: "Grupo de broma (mujeres)" },
+    gagWhat: "Tu regalo de broma de $30 es para esta persona.",
+    allResultTag: "Grupo de todos",
+    allWhat: "Tu regalo especial de $30 es para esta persona.",
+    secret: "Shh. Cierra esta página antes de que alguien la vea.",
+    hide: "Ocultar mis nombres",
+    errName: "Primero escoge tu nombre.",
+    errCode: "Ese código no coincide con tu nombre. Revísalo e intenta otra vez.",
+    errShort: "Los códigos tienen 6 caracteres, como ABC-123.",
+    footer: "Hecho para el grupo. Felices fiestas 🎄"
+  }
+};
+
+let lang = "en";
+let lastGagPool = null;
+const $ = (id) => document.getElementById(id);
+const root = document.querySelector("[data-i18n-root]");
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function paint() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.title = t.brand;
+  document.querySelectorAll("[data-t]").forEach((el) => { if (t[el.dataset.t]) el.textContent = t[el.dataset.t]; });
+  document.querySelectorAll("[data-t-html]").forEach((el) => { el.innerHTML = t[el.dataset.tHtml]; });
+  if (lastGagPool) $("m-gag-tag").textContent = t.gagTag[lastGagPool];
+  if ($("err").textContent) $("err").textContent = "";
+}
+
+function setLang(next, animate) {
+  if (next === lang) return;
+  lang = next;
+  $("lang").dataset.lang = next;
+  document.querySelectorAll("[data-lang-btn]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.langBtn === next)));
+  try { localStorage.setItem("santa-lang", next); } catch (e) {}
+  if (!animate) { paint(); return; }
+  root.classList.add("swapping");
+  setTimeout(() => { paint(); root.classList.remove("swapping"); }, 150);
+}
+document.querySelectorAll("[data-lang-btn]").forEach((b) => b.addEventListener("click", () => setLang(b.dataset.langBtn, true)));
+
+// Names list
+const names = Object.keys(DRAWS.people).sort((a, b) => a.localeCompare(b));
+names.forEach((n) => { const o = document.createElement("option"); o.value = n; o.textContent = n; $("who").appendChild(o); });
+
+// Code formatting: uppercase, strip junk, add the dash after 3 characters
+$("code").addEventListener("input", (e) => {
+  const raw = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+  e.target.value = raw.length > 3 ? raw.slice(0, 3) + "-" + raw.slice(3) : raw;
+});
+
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function openBox(code, box) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(code), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt: b64(box.salt), iterations: DRAWS.iterations, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(box.iv) }, key, b64(box.ct));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+
+function hideResults() {
+  ["m-gag", "m-all"].forEach((id) => $(id).classList.remove("in"));
+  $("results").hidden = true;
+  $("m-gag-who").textContent = ""; $("m-all-who").textContent = "";
+  lastGagPool = null;
+}
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const t = T[lang];
+  const who = $("who").value;
+  const code = $("code").value.replace(/-/g, "");
+  $("err").textContent = "";
+  if (!who) { $("err").textContent = t.errName; return; }
+  if (code.length !== 6) { $("err").textContent = t.errShort; return; }
+  const btn = $("go");
+  btn.disabled = true; btn.textContent = t.opening;
+  try {
+    const m = await openBox(code, DRAWS.people[who]);
+    hideResults();
+    lastGagPool = m.gagPool;
+    $("m-gag-tag").textContent = T[lang].gagTag[m.gagPool];
+    $("m-gag-who").textContent = m.gag;
+    $("m-all-who").textContent = m.everyone;
+    $("results").hidden = false;
+    // Two cards arrive one after the other — a rare, one-time moment
+    requestAnimationFrame(() => {
+      $("m-gag").classList.add("in");
+      setTimeout(() => $("m-all").classList.add("in"), reduceMotion ? 0 : 80);
+    });
+    $("results").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+  } catch (err) {
+    hideResults();
+    $("err").textContent = T[lang].errCode;
+  } finally {
+    btn.disabled = false; btn.textContent = T[lang].reveal;
+  }
+});
+$("hide").addEventListener("click", () => { hideResults(); $("code").value = ""; });
+$("who").addEventListener("change", hideResults);
+
+// Restore language preference
+let saved = null;
+try { saved = localStorage.getItem("santa-lang"); } catch (e) {}
+if (saved === "es") setLang("es", false);
+</script>
+</body>
+</html>
